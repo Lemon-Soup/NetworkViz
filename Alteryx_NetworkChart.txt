@@ -1,0 +1,87 @@
+#################################
+#Prerequisites
+
+from ayx import Alteryx
+from ayx import Package
+
+Alteryx.installPackages("--user networkx")
+
+import networkx as nx
+import numpy as np
+import pandas as pd
+from pandas import DataFrame
+
+
+
+#################################
+# Read in Source File - NB this must match the schema requirements
+
+df_InputData = Alteryx.read("#1")
+Src_Column = 'Source Name'
+Tgt_Column = 'User Name'
+
+
+
+#################################
+#Nodes are positioned using the Fruchterman-Reingold force-directed algorithm
+
+Q = nx.Graph()
+arr_SrcTgt= np.array(df_InputData[[Src_Column, Tgt_Column]])
+Q.add_edges_from(arr_SrcTgt)
+dict_Coords = nx.spring_layout(Q)
+
+#print(arr_SrcTgt)
+df_Raw_Coords = DataFrame(dict_Coords)
+df_Raw_Coords = df_Raw_Coords.T
+df_Raw_Coords.columns = ['X','Y']
+df_Raw_Coords['NodeName'] = df_Raw_Coords.index
+
+#Add in a "Node Name" for cases where nodes do not link with another named node
+
+df_Raw_Coords.fillna("Not Specified", inplace = True)
+
+
+
+#################################
+#Create bridge between main dataset and coordinates
+
+arr_SrcTgt2 = arr_SrcTgt.reshape(1,(len(arr_SrcTgt)*2))
+arr_SrcTgt2 = arr_SrcTgt2.reshape(-1)
+df_SrcTgt = DataFrame(arr_SrcTgt2,columns=['NodeName'])
+arr_Index = []
+for i in range(1,(len(arr_SrcTgt)+1)):
+        arr_Index.append(i)
+        arr_Index.append(i)
+df_SrcTgt['c_Index'] = arr_Index
+
+#Join the datasets
+
+df_InputData.index = df_InputData.index + 1
+
+Merge_1 = pd.merge(
+    left=df_SrcTgt,
+    right=df_InputData,
+    how="inner",
+    left_on=df_SrcTgt['c_Index'],
+    right_index=True,
+)
+
+df_MainDat = DataFrame(Merge_1)
+df_MainDat = df_MainDat.drop(columns=['key_0'])
+
+Merge_2 = pd.merge(
+    left=df_Raw_Coords,
+    right=df_MainDat,
+    how="left",
+    left_on=df_Raw_Coords['NodeName'],
+    right_on=df_MainDat['NodeName'],
+    suffixes=("", "_y"),
+)
+
+df_finaldat = DataFrame(Merge_2)
+df_finaldat = df_finaldat.drop(columns=['key_0','NodeName_y'])
+
+
+
+#################################
+Alteryx.write(df_finaldat, 1)
