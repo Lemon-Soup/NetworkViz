@@ -1,0 +1,104 @@
+#################################
+from ayx import Alteryx
+from ayx import Package
+Alteryx.installPackages("--user networkx")
+import networkx as nx
+import numpy as np
+import pandas as pd
+from pandas import DataFrame
+
+
+
+#################################
+# Read in Source File
+df_InputData = Alteryx.read("#1")
+Src_Column = 'Source Name'
+Tgt_Column = 'User Name'
+
+
+
+
+#################################
+#Create Coordinates
+
+#Create column index
+arr_SrcTgt= np.array(df_InputData[[Src_Column, Tgt_Column]])
+
+#Create Graph Coordinates
+Q = nx.Graph()
+Q.add_edges_from(arr_SrcTgt)
+dict_Coords = nx.spring_layout(Q)
+
+#print(arr_SrcTgt)
+df_Raw_Coords = DataFrame(dict_Coords)
+df_Raw_Coords = df_Raw_Coords.T
+df_Raw_Coords.columns = ['X','Y']
+df_Raw_Coords['NodeName'] = df_Raw_Coords.index
+
+df_Raw_Coords.fillna("Not Specified", inplace = True)
+
+#print(df_Raw_Coords)
+
+#Alteryx.write(df_Raw_Coords,1)
+
+
+
+#################################
+#Create Bridge
+arr_SrcTgt2 = arr_SrcTgt.reshape(1,(len(arr_SrcTgt)*2))
+arr_SrcTgt2 = arr_SrcTgt2.reshape(-1)
+df_SrcTgt = DataFrame(arr_SrcTgt2,columns=['NodeName'])
+arr_Index = []
+for i in range(1,(len(arr_SrcTgt)+1)):
+        arr_Index.append(i)
+        arr_Index.append(i)
+df_SrcTgt['c_Index'] = arr_Index
+
+#Alteryx.write(df_SrcTgt, 2)
+
+
+
+#################################
+#Join the coordinates to the main data
+
+df_InputData.index = df_InputData.index + 1
+
+Merged = pd.merge(
+    left=df_SrcTgt,
+    right=df_InputData,
+    how="inner",
+    left_on=df_SrcTgt['c_Index'],
+    right_index=True,
+    sort=True,
+    suffixes=("_x", "_y"),
+    copy=True,
+    indicator=False,
+    validate=None,
+)
+
+#print(Merge)
+df_MainDat = DataFrame(Merged)
+df_MainDat = df_MainDat.drop(columns=['key_0'])
+
+Merge2 = pd.merge(
+    left=df_Raw_Coords,
+    right=df_MainDat,
+    how="left",
+    left_on=df_Raw_Coords['NodeName'],
+    right_on=df_MainDat['NodeName'],
+    sort=True,
+    suffixes=("", "_y"),
+    copy=True,
+    indicator=False,
+    validate=None,
+)
+
+df_finaldat = DataFrame(Merge2)
+df_finaldat = df_finaldat.drop(columns=['key_0','NodeName_y'])
+
+Alteryx.write(df_finaldat, 1)
+
+
+
+
+#################################
