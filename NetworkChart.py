@@ -1,0 +1,165 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Network Charts\n",
+    "\n",
+    "This notebook is for structuring data to visualise a network using the networkx package."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Install Required Packages & Import Data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Prerequisites\n",
+    "\n",
+    "import sys\n",
+    "!{sys.executable} -m pip install --user networkx\n",
+    "!{sys.executable} -m pip install --user numpy\n",
+    "!{sys.executable} -m pip install --user pandas\n",
+    "\n",
+    "import networkx as nx\n",
+    "import numpy as np\n",
+    "import pandas as pd\n",
+    "\n",
+    "from pandas import DataFrame\n",
+    "\n",
+    "# Read in Source File - NB this must match the schema requirements\n",
+    "\n",
+    "df_InputData = pd.read_excel(\"Emp_Comp_Net.xlsx\")\n",
+    "Src_Column = 'Source Name'\n",
+    "Tgt_Column = 'User Name'\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Create Coordinates for Nodes in Network"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Nodes are positioned using the Fruchterman-Reingold force-directed algorithm.\n",
+    "\n",
+    "Q = nx.Graph()\n",
+    "arr_SrcTgt= np.array(df_InputData[[Src_Column, Tgt_Column]])\n",
+    "Q.add_edges_from(arr_SrcTgt)\n",
+    "dict_Coords = nx.spring_layout(Q)\n",
+    "\n",
+    "df_Raw_Coords = DataFrame(dict_Coords)\n",
+    "df_Raw_Coords = df_Raw_Coords.T\n",
+    "df_Raw_Coords.columns = ['X','Y']\n",
+    "df_Raw_Coords['NodeName'] = df_Raw_Coords.index\n",
+    "\n",
+    "#Add in a \"Node Name\" for cases where nodes do not link with another named node\n",
+    "\n",
+    "df_Raw_Coords.fillna(\"Not Specified\", inplace = True)\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Join Coordinates to the Main Dataset"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Create bridge between main dataset and coordinates\n",
+    "\n",
+    "arr_SrcTgt2 = arr_SrcTgt.reshape(1,(len(arr_SrcTgt)*2))\n",
+    "arr_SrcTgt2 = arr_SrcTgt2.reshape(-1)\n",
+    "df_SrcTgt = DataFrame(arr_SrcTgt2,columns=['NodeName'])\n",
+    "arr_Index = []\n",
+    "for i in range(1,(len(arr_SrcTgt)+1)):\n",
+    "        arr_Index.append(i)\n",
+    "        arr_Index.append(i)\n",
+    "df_SrcTgt['c_Index'] = arr_Index\n",
+    "\n",
+    "#Join the datasets\n",
+    "\n",
+    "df_InputData.index = df_InputData.index + 1\n",
+    "\n",
+    "Merge_1 = pd.merge(\n",
+    "    left=df_SrcTgt,\n",
+    "    right=df_InputData,\n",
+    "    how=\"inner\",\n",
+    "    left_on=df_SrcTgt['c_Index'],\n",
+    "    right_index=True,\n",
+    ")\n",
+    "\n",
+    "df_MainDat = DataFrame(Merge_1)\n",
+    "df_MainDat = df_MainDat.drop(columns=['key_0'])\n",
+    "\n",
+    "Merge_2 = pd.merge(\n",
+    "    left=df_Raw_Coords,\n",
+    "    right=df_MainDat,\n",
+    "    how=\"left\",\n",
+    "    left_on=df_Raw_Coords['NodeName'],\n",
+    "    right_on=df_MainDat['NodeName'],\n",
+    "    suffixes=(\"\", \"_y\"),\n",
+    ")\n",
+    "\n",
+    "df_finaldat = DataFrame(Merge_2)\n",
+    "df_finaldat = df_finaldat.drop(columns=['key_0','NodeName_y'])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Output Excel File"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_finaldat.to_excel(\"Network Data.xlsx\", sheet_name='Network')"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
