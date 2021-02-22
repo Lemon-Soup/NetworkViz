@@ -9,7 +9,7 @@ To create the Network Charts, a certain data structure is required for Tableau. 
   1. It must contain a column called "Target ID" which identifies the target node, and a column called "Source ID" which identifies the source node.
   2. It must contain a column called "Name" which links each edge with both the source node and the target node.
 
-![Network Screenshot - Filtered](images/Network%20Screenshot%20-%20Filtered.JPG)
+![Example Data Structure](images/Example%20Data%20Structure.JPG)
 
 *For example, for a network representing knowledge flows among team members, if Sophie goes to Andrew for advice the data needs to represent that link as above, with values otherwise repeated across the rows.*
 
