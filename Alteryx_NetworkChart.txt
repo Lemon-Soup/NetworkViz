@@ -17,8 +17,8 @@ from pandas import DataFrame
 # Read in Source File - NB this must match the schema requirements
 
 df_InputData = Alteryx.read("#1")
-Src_Column = 'Source Name'
-Tgt_Column = 'User Name'
+Src_Column = 'Source ID'
+Tgt_Column = 'Target ID'
 
 
 
