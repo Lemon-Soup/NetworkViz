@@ -11,7 +11,7 @@ To create the Network Charts, a certain data structure is required for Tableau. 
 
 ![Example Data Structure](images/Example%20Data%20Structure.JPG)
 
-*For example, for a network representing knowledge flows among team members, if Sophie goes to Andrew for advice the data needs to represent that link as above, with values otherwise repeated across the rows.*
+*For example, in a network representing knowledge flows among team members, if Sophie asks Andrew for advice on Database Management, the data needs to represent that link as above, with values otherwise repeated across the rows.*
 
 With this input dataset configured, you can use the python scripts shared in this repository to create the coordinates needed to plot a network chart in Tableau. The script is available both as a Jupyter notebook and as a txt to be copied into Alteryx, to accommodate your data preparation preferences.
 
