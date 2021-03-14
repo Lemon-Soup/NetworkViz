@@ -15,8 +15,9 @@ To create the Network Charts, a certain data structure is required for Tableau. 
 
 With this input dataset configured, you can use the python scripts shared in this repository to create the coordinates needed to plot a network chart in Tableau. The script is available both as a Jupyter notebook and as a txt to be copied into Alteryx, to accommodate your data preparation preferences.
 
-For information on how to configure the data to build a chart in Tableau, stay tuned!
+For information on how to configure the data to build a chart in Tableau, see this blog:
+https://truecue.com/resources/blog/tableau-how-to-network-charts/
 
 To interact with the "final product", view an example Tableau Network Chart here:
-https://public.tableau.com/profile/sophie.hiscock#!/vizhome/NetworkCharts1/NetworkVisualisation
+https://truecue.com/visualisation-gallery/tableau-network-charts/
 
