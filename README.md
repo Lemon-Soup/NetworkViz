@@ -1,11 +1,10 @@
 # Network Visualisations
-A repo containing python and Alteryx-python scripts that prepare data for network visualisations in Tableau.
+A repo containing python and Alteryx-python scripts that prepare data for network visualisations in Tableau. This is made to support those following a 'Tiny Viz Talk' made in March 2021 - view the talk on YouTube [here](https://youtu.be/N7JVM84b8aM?si=vRTDXvsn_vs5wAgz).
 These scripts use the "networkx" package, documentation is available [here](https://networkx.org/documentation/stable/index.html).
 
 ![Network Screenshot - Filtered](images/Network%20Screenshot%20-%20Filtered.JPG)
 
 ### Instructions
-An instructional video on how to build a network visualisation in Tableau is available [here](https://youtu.be/N7JVM84b8aM?si=vRTDXvsn_vs5wAgz).
 To create the Network, a certain data structure is required for Tableau. The first step is to create an input dataset that matches the following criteria:
   1. It must contain a column called "Target ID" which identifies the target node, and a column called "Source ID" which identifies the source node.
   2. It must contain a column called "Name" which links each edge with both the source node and the target node.
